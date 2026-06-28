@@ -1,0 +1,199 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class SistemaGerenciamento {
+
+    static Scanner sc = new Scanner(System.in);
+
+    // Arrays simples para guardar os dados
+    static ArrayList<String[]> usuarios = new ArrayList<>(); // nome, cpf, email, cargo, login, senha, perfil
+    static ArrayList<String[]> projetos  = new ArrayList<>(); // nome, descricao, inicio, termino, status, gerente
+    static ArrayList<String[]> equipes   = new ArrayList<>(); // nome, descricao, membros(separados por |)
+
+    public static void main(String[] args) {
+        int op;
+        do {
+            System.out.println("\n=== MENU PRINCIPAL ===");
+            System.out.println("1 - Usuarios");
+            System.out.println("2 - Projetos");
+            System.out.println("3 - Equipes");
+            System.out.println("0 - Sair");
+            op = lerInt("Opcao: ");
+            if (op == 1) menuUsuarios();
+            else if (op == 2) menuProjetos();
+            else if (op == 3) menuEquipes();
+        } while (op != 0);
+        System.out.println("Ate logo!");
+    }
+
+    // ======== USUARIOS ========
+    static void menuUsuarios() {
+        int op;
+        do {
+            System.out.println("\n--- USUARIOS ---");
+            System.out.println("1-Cadastrar  2-Listar  3-Excluir  0-Voltar");
+            op = lerInt("Opcao: ");
+            if (op == 1) cadastrarUsuario();
+            else if (op == 2) listarUsuarios();
+            else if (op == 3) excluirUsuario();
+        } while (op != 0);
+    }
+
+    static void cadastrarUsuario() {
+        System.out.println("\n-- Cadastro de Usuario --");
+        String nome   = lerTexto("Nome completo: ");
+        String cpf    = lerTexto("CPF: ");
+        String email  = lerTexto("E-mail: ");
+        String cargo  = lerTexto("Cargo: ");
+        String login  = lerTexto("Login: ");
+        String senha  = lerTexto("Senha: ");
+        System.out.println("Perfil: 1-Administrador  2-Gerente  3-Colaborador");
+        int p = lerInt("Escolha: ");
+        String perfil = p == 1 ? "Administrador" : p == 2 ? "Gerente" : "Colaborador";
+
+        usuarios.add(new String[]{nome, cpf, email, cargo, login, senha, perfil});
+        System.out.println("Usuario cadastrado!");
+    }
+
+    static void listarUsuarios() {
+        if (usuarios.isEmpty()) { System.out.println("Nenhum usuario cadastrado."); return; }
+        for (int i = 0; i < usuarios.size(); i++) {
+            String[] u = usuarios.get(i);
+            System.out.println("[" + i + "] " + u[0] + " | CPF: " + u[1] + " | Email: " + u[2]
+                    + " | Cargo: " + u[3] + " | Login: " + u[4] + " | Perfil: " + u[6]);
+        }
+    }
+
+    static void excluirUsuario() {
+        listarUsuarios();
+        if (usuarios.isEmpty()) return;
+        int idx = lerInt("Numero do usuario para excluir: ");
+        if (idx >= 0 && idx < usuarios.size()) {
+            usuarios.remove(idx);
+            System.out.println("Usuario removido!");
+        } else System.out.println("Numero invalido.");
+    }
+
+    // ======== PROJETOS ========
+    static void menuProjetos() {
+        int op;
+        do {
+            System.out.println("\n--- PROJETOS ---");
+            System.out.println("1-Cadastrar  2-Listar  3-Excluir  0-Voltar");
+            op = lerInt("Opcao: ");
+            if (op == 1) cadastrarProjeto();
+            else if (op == 2) listarProjetos();
+            else if (op == 3) excluirProjeto();
+        } while (op != 0);
+    }
+
+    static void cadastrarProjeto() {
+        if (usuarios.isEmpty()) { System.out.println("Cadastre ao menos um usuario (gerente) primeiro."); return; }
+        System.out.println("\n-- Cadastro de Projeto --");
+        String nome   = lerTexto("Nome do projeto: ");
+        String desc   = lerTexto("Descricao: ");
+        String inicio = lerTexto("Data de inicio (dd/mm/aaaa): ");
+        String fim    = lerTexto("Data de termino prevista (dd/mm/aaaa): ");
+        System.out.println("Status: 1-Planejado  2-Em andamento  3-Concluido  4-Cancelado");
+        int s = lerInt("Escolha: ");
+        String[] statusOp = {"Planejado","Em andamento","Concluido","Cancelado"};
+        String status = (s >= 1 && s <= 4) ? statusOp[s - 1] : "Planejado";
+
+        System.out.println("Escolha o gerente:");
+        listarUsuarios();
+        int idx = lerInt("Numero do gerente: ");
+        String gerente = (idx >= 0 && idx < usuarios.size()) ? usuarios.get(idx)[0] : "Sem gerente";
+
+        projetos.add(new String[]{nome, desc, inicio, fim, status, gerente});
+        System.out.println("Projeto cadastrado!");
+    }
+
+    static void listarProjetos() {
+        if (projetos.isEmpty()) { System.out.println("Nenhum projeto cadastrado."); return; }
+        for (int i = 0; i < projetos.size(); i++) {
+            String[] p = projetos.get(i);
+            System.out.println("[" + i + "] " + p[0] + " | " + p[1] + " | Inicio: " + p[2]
+                    + " | Termino: " + p[3] + " | Status: " + p[4] + " | Gerente: " + p[5]);
+        }
+    }
+
+    static void excluirProjeto() {
+        listarProjetos();
+        if (projetos.isEmpty()) return;
+        int idx = lerInt("Numero do projeto para excluir: ");
+        if (idx >= 0 && idx < projetos.size()) {
+            projetos.remove(idx);
+            System.out.println("Projeto removido!");
+        } else System.out.println("Numero invalido.");
+    }
+
+    // ======== EQUIPES ========
+    static void menuEquipes() {
+        int op;
+        do {
+            System.out.println("\n--- EQUIPES ---");
+            System.out.println("1-Cadastrar  2-Listar  3-Add membro  4-Excluir  0-Voltar");
+            op = lerInt("Opcao: ");
+            if (op == 1) cadastrarEquipe();
+            else if (op == 2) listarEquipes();
+            else if (op == 3) adicionarMembro();
+            else if (op == 4) excluirEquipe();
+        } while (op != 0);
+    }
+
+    static void cadastrarEquipe() {
+        System.out.println("\n-- Cadastro de Equipe --");
+        String nome = lerTexto("Nome da equipe: ");
+        String desc = lerTexto("Descricao: ");
+        equipes.add(new String[]{nome, desc, ""});
+        System.out.println("Equipe cadastrada!");
+    }
+
+    static void listarEquipes() {
+        if (equipes.isEmpty()) { System.out.println("Nenhuma equipe cadastrada."); return; }
+        for (int i = 0; i < equipes.size(); i++) {
+            String[] e = equipes.get(i);
+            String membros = e[2].isEmpty() ? "(sem membros)" : e[2].replace("|", ", ");
+            System.out.println("[" + i + "] " + e[0] + " | " + e[1] + " | Membros: " + membros);
+        }
+    }
+
+    static void adicionarMembro() {
+        listarEquipes();
+        if (equipes.isEmpty()) return;
+        int eIdx = lerInt("Numero da equipe: ");
+        if (eIdx < 0 || eIdx >= equipes.size()) { System.out.println("Numero invalido."); return; }
+
+        listarUsuarios();
+        if (usuarios.isEmpty()) return;
+        int uIdx = lerInt("Numero do usuario: ");
+        if (uIdx < 0 || uIdx >= usuarios.size()) { System.out.println("Numero invalido."); return; }
+
+        String[] equipe = equipes.get(eIdx);
+        String novoMembro = usuarios.get(uIdx)[0];
+        equipe[2] = equipe[2].isEmpty() ? novoMembro : equipe[2] + "|" + novoMembro;
+        System.out.println(novoMembro + " adicionado(a) a equipe!");
+    }
+
+    static void excluirEquipe() {
+        listarEquipes();
+        if (equipes.isEmpty()) return;
+        int idx = lerInt("Numero da equipe para excluir: ");
+        if (idx >= 0 && idx < equipes.size()) {
+            equipes.remove(idx);
+            System.out.println("Equipe removida!");
+        } else System.out.println("Numero invalido.");
+    }
+
+    // ======== UTILITARIOS ========
+    static String lerTexto(String prompt) {
+        System.out.print(prompt);
+        return sc.nextLine();
+    }
+
+    static int lerInt(String prompt) {
+        System.out.print(prompt);
+        try { int v = Integer.parseInt(sc.nextLine()); return v; }
+        catch (Exception e) { return -1; }
+    }
+}
